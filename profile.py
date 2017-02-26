@@ -3,21 +3,15 @@
 from bprofile import BProfile
 
 import tempfile
+import time
 from solve import solve
-from factory import SolverFactory
+import factory
 
-methods = [
-    "astar",
-    # "breadthfirst",
-    # "depthfirst",
-    "dijkstra",
-    # "leftturn",
-]
 inputs = [
-    # "tiny",
-    # "small",
-    # "normal",
-    # "braid200",
+    "tiny",
+    "small",
+    "normal",
+    "braid200",
     "logo",
     "combo400",
     "braid2k",
@@ -28,12 +22,28 @@ inputs = [
     # "vertical15k",
 ]
 
-def profile():
-    for m in methods:
+def profile_solver(method, priority_queue=None):
+    name = method
+    if priority_queue:
+        name += "-" + priority_queue
+    with BProfile("%s.png" % name) as profiler:
         for i in inputs:
-            with tempfile.NamedTemporaryFile(suffix='.png') as tmp:
-                solve(SolverFactory(), m, "examples/%s.png" % i, tmp.name)
+            with tempfile.NamedTemporaryFile(suffix=".png") as tmp:
+                solve("examples/%s.png" % i, tmp.name, method, priority_queue)
 
-profiler = BProfile('profiler.png')
-with profiler:
-    profile()
+def uses_priority_queue(method):
+    return method in ["astar", "dijkstra"]
+
+def main():
+    for m in factory.MethodChoices:
+        method_start = time.time()
+        if uses_priority_queue(m):
+            for pq in factory.PriorityQueueChoices:
+                profile_solver(m, pq)
+        else:
+            profile_solver(m)
+        method_end = time.time()
+        print "*** Elapsed time for %s: %d" % (m, method_end - method_start)
+
+if __name__ == "__main__":
+    main()

@@ -61,6 +61,9 @@ class FibHeap:
         self.count = 0
         self.maxdegree = 0
 
+    def __len__(self):
+        return self.count
+
     def isempty(self):
         return self.count == 0
 

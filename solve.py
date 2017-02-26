@@ -2,12 +2,12 @@ import numpy as np
 from PIL import Image
 import time
 from mazes import Maze
-from factory import SolverFactory
+import factory
 
 # Read command line arguments - the python argparse class is convenient here.
 import argparse
 
-def solve(factory, method, input_file, output_file):
+def solve(input_file, output_file, method, pq_impl=None):
     # Load Image
     print ("Loading Image")
     im = Image.open(input_file)
@@ -22,7 +22,7 @@ def solve(factory, method, input_file, output_file):
     print ("Time elapsed:", total, "\n")
 
     # Create and run solver
-    [title, solver] = factory.createsolver(method)
+    [title, solver] = factory.createsolver(method, pq_impl)
     print ("Starting Solve:", title)
 
     t0 = time.time()
@@ -82,15 +82,17 @@ def solve(factory, method, input_file, output_file):
 
 
 def main():
-    sf = SolverFactory()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--method", nargs='?', const=sf.Default, default=sf.Default,
-                        choices=sf.Choices)
+    parser.add_argument("-m", "--method", nargs='?', const=factory.DefaultMethod, default=factory.DefaultMethod,
+                        choices=factory.MethodChoices)
+    parser.add_argument("--priority-queue", nargs='?', const=None, default=None,
+                        choices=factory.PriorityQueueChoices,
+                        help="only used by the astar and dijkstra methods")
     parser.add_argument("input_file")
     parser.add_argument("output_file")
     args = parser.parse_args()
 
-    solve(sf, args.method, args.input_file, args.output_file)
+    solve(args.input_file, args.output_file, args.method, args.priority_queue)
 
 if __name__ == "__main__":
     main()
